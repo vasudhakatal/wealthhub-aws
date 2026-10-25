@@ -1,0 +1,53 @@
+name: wealthhub
+x-app: &app
+  build:
+    context: .
+    dockerfile: api/Dockerfile
+  environment:
+    DATABASE_URL: postgresql+psycopg://wealthhub:local-db-only@db:5432/wealthhub
+    JWT_SECRET: ${JWT_SECRET:?Run the setup script first}
+    DEMO_PASSWORD: ${DEMO_PASSWORD:?Run the setup script first}
+    PDF_DIR: /pdfs
+  volumes:
+    - pdfs:/pdfs
+  depends_on:
+    db:
+      condition: service_healthy
+  init: true
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: wealthhub
+      POSTGRES_PASSWORD: local-db-only
+      POSTGRES_DB: wealthhub
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wealthhub -d wealthhub"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  api:
+    <<: *app
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  worker:
+    <<: *app
+    command: ["python", "-m", "worker.main"]
+    depends_on:
+      api:
+        condition: service_healthy
+  dashboard:
+    build: ./dashboard
+    ports:
+      - "127.0.0.1:18080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+volumes:
+  pgdata:
+  pdfs:

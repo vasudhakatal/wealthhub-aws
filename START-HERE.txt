@@ -1,0 +1,22 @@
+WEALTHHUB — FIRST LOCAL VERSION
+Built for Vasudha Katal
+
+1. Extract this ZIP to a normal folder (do not run inside the ZIP viewer).
+2. Start Docker Desktop.
+3. Open the wealthhub-aws folder containing docker-compose.yml.
+4. Type powershell in File Explorer's address bar and press Enter.
+5. Paste this command:
+
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup.ps1
+
+6. Wait for the images to download and build.
+7. Open http://localhost:18080
+
+Username: demo
+Password: local-demo-only
+
+No AWS account or payment details are required.
+Initial downloads require an internet connection.
+
+If something fails, copy the error output back into our chat.
+See README.md for the full guide, limitations and stop commands.
