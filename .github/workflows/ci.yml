@@ -53,6 +53,7 @@ jobs:
   container-scan:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         image:
           - name: wealthhub-api
@@ -64,12 +65,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker build -t ${{ matrix.image.name }}:ci -f ${{ matrix.image.dockerfile }} ${{ matrix.image.context }}
-      - uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: ${{ matrix.image.name }}:ci
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: '1'
+      - name: Scan image with Trivy
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.58.0 image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 ${{ matrix.image.name }}:ci
   terraform:
     runs-on: ubuntu-latest
     steps:
