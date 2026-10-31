@@ -11,7 +11,9 @@
 - [x] Worker-generated PDFs and authenticated download.
 - [x] Windows Docker startup and manual onboarding/PDF demonstration.
 - [x] Backend tests, Python lint, UI build and dependency audit checked during development.
-- [x] CI workflow supplied, pending first repository run.
+- [x] CI workflow with tests, lint, UI build, Compose integration, gitleaks, Trivy and Terraform checks.
+- [x] 40 automated tests across authentication, resilience, validation, rate limiting and the worker.
+- [x] Terraform for AWS foundations (KMS, private S3 bucket, ECR, logs, IAM roles, secret container), statically scanned with Checkov, not applied.
 
 ## Next: public portfolio evidence
 
@@ -19,7 +21,6 @@
 - [ ] Add a CI badge after a successful run.
 - [ ] Add a full portfolio overview screenshot and short demo video.
 - [ ] Run the script-based smoke check against Windows Compose.
-- [ ] Add secret and container vulnerability scanning.
 - [ ] Add browser tests and check desktop/mobile accessibility.
 
 ## Later: hardening
@@ -32,7 +33,6 @@
 
 ## Cloud extension — no paid resources without a new budget decision
 
-- [ ] Implement Terraform modules and statically validate them.
 - [ ] Add the S3 PDF-storage adapter.
 - [ ] Document IAM, secret injection, observability and teardown.
 - [ ] Research costs only if deployment is considered in future.

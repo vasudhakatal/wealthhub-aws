@@ -1,0 +1,3 @@
+# Copy to terraform.tfvars. Never commit real values.
+region      = "ap-southeast-2"
+environment = "dev"

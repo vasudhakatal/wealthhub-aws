@@ -1,0 +1,25 @@
+# Checkov configuration. Run from the repo root:  checkov --config-file .checkov.yaml
+#
+# Every skipped check has a reason. Skips are decisions for a small demo project, not blanket
+# exceptions. Revisit each one before using this in production.
+
+framework:
+  - terraform
+directory:
+  - infra
+quiet: true
+compact: true
+
+skip-check:
+  # --- KMS key policy: "*" as the resource is how key policies work (they attach to the key) ---
+  - CKV_AWS_109 # Key policy must let the account root administer the key
+  - CKV_AWS_111 # CloudWatch Logs needs kms:GenerateDataKey*, constrained by an encryption-context condition
+  - CKV_AWS_356 # Same: the resource in a key policy is always "*"
+
+  # --- PDF bucket: demo data only, so cost outweighs these controls ---
+  - CKV_AWS_18 # Access logging for the PDF bucket would need a second bucket
+  - CKV_AWS_144 # Cross-region replication doubles storage cost; PDFs are regenerable demo data
+  - CKV2_AWS_62 # No consumer for bucket event notifications yet
+
+  # --- Secret ---
+  - CKV2_AWS_57 # The JWT secret is rotated by hand for this demo; automatic rotation needs a Lambda

@@ -1,4 +1,4 @@
-name: Local platform CI
+name: ci
 on:
   pull_request:
   push:
@@ -41,3 +41,50 @@ jobs:
         run: docker compose logs --no-color
       - if: always()
         run: docker compose down -v
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  container-scan:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image:
+          - name: wealthhub-api
+            context: .
+            dockerfile: api/Dockerfile
+          - name: wealthhub-dashboard
+            context: dashboard
+            dockerfile: dashboard/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t ${{ matrix.image.name }}:ci -f ${{ matrix.image.dockerfile }} ${{ matrix.image.context }}
+      - uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ matrix.image.name }}:ci
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check -recursive infra
+      - run: terraform -chdir=infra init -backend=false -input=false
+      - run: terraform -chdir=infra validate
+  iac-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install checkov
+      # Skipped checks and the reasons for them are documented in .checkov.yaml
+      - run: checkov --config-file .checkov.yaml

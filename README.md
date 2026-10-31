@@ -1,12 +1,14 @@
 # WealthHub
 
+![ci](https://github.com/vasudhakatal/wealthhub-aws/actions/workflows/ci.yml/badge.svg)
+
 ### A mock wealth platform with automated client onboarding
 
 WealthHub brings synthetic bank, share and superannuation data into one adviser dashboard. A client onboarding request creates a database-backed job; a separate worker generates a welcome PDF for authenticated download.
 
-**By [Vasudha Katal](https://github.com/vasudhakatal26)** · React · FastAPI · PostgreSQL · Docker Compose
+**By [Vasudha Katal](https://github.com/vasudhakatal)** · React · FastAPI · PostgreSQL · Docker Compose
 
-> **Current status:** working local application. Windows Docker startup and client-to-PDF flow were manually verified. Uses fictional data only. AWS and Terraform are planned extensions, not implemented or deployed.
+> **Current status:** working local application. Windows Docker startup and client-to-PDF flow were manually verified. Uses fictional data only. Terraform for the AWS foundations (encryption key, private PDF bucket, image registries, logs, IAM roles, secret container) is written and scanned in CI but **has not been applied**. The AWS compute and database layer is planned.
 
 [Quick start](#run-it-locally) · [Architecture](docs/architecture.md) · [Engineering decisions](docs/decisions.md) · [Test evidence](docs/verification.md) · [Security](docs/security.md) · [Roadmap](docs/roadmap.md)
 
@@ -76,7 +78,7 @@ The execution-policy override applies only to that PowerShell process. The scrip
 After the first code push, a fresh checkout can use:
 
 ```powershell
-git clone https://github.com/vasudhakatal26/wealthhub-aws.git
+git clone https://github.com/vasudhakatal/wealthhub-aws.git
 cd wealthhub-aws
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup.ps1
 ```
@@ -108,17 +110,17 @@ These preserve the database and PDFs. `docker compose down` removes this project
 
 | Check | Evidence / current status |
 | --- | --- |
-| Backend behaviour | Seven pytest tests passed during development |
+| Backend behaviour | 40 pytest tests pass: authentication and JWT claims, resilient aggregation, rate limiting, input validation, worker ordering and failure handling, and the onboarding-to-PDF flow |
 | Python lint | Ruff passed for API and worker |
 | UI production build | Vite build passed |
 | Frontend dependency audit | Zero reported vulnerabilities in the audit run at packaging time |
 | Local Docker startup | User-provided Windows screenshot shows database/API healthy and worker/dashboard started |
 | PostgreSQL onboarding and PDF | Manually exercised in the Windows Docker application; completion and opened PDF captured above |
 | Browser automation | Not completed; the development environment blocked Chromium startup |
-| GitHub CI | Workflow included; result pending first push and workflow run |
-| AWS / Terraform | Not implemented or deployed |
+| GitHub CI | Runs on every push: lint, tests, UI build and audit, Compose integration, gitleaks, Trivy image scans, `terraform validate` and Checkov. See the badge and the Actions tab |
+| AWS / Terraform | `infra/` is formatted, validated and Checkov-scanned in CI. **Never applied**; no AWS resources exist |
 
-No green CI badge is shown before a real successful run. [Exact checks, limitations and evidence →](docs/verification.md)
+The CI badge above reflects the real status of the latest run. [Exact checks, limitations and evidence →](docs/verification.md)
 
 To run backend checks in PowerShell:
 
@@ -170,6 +172,7 @@ Call `/auth/login`, copy its `access_token`, then use **Authorize** in the API e
 | `dashboard/src/` | React dashboard, onboarding form and styles |
 | `docker-compose.yml` | Network boundary, volumes and health dependencies |
 | `.github/workflows/ci.yml` | Automated test, build and Compose integration jobs |
+| `infra/` | Terraform for the AWS foundations (not applied) |
 | `docs/` | Architecture, trade-offs, evidence, limitations and next work |
 
 ## Design decisions worth discussing
@@ -185,4 +188,4 @@ This is a **single-adviser local demonstration**, not a production financial ser
 
 [Security decisions and gaps →](docs/security.md) · [Troubleshooting →](docs/troubleshooting.md) · [Roadmap →](docs/roadmap.md) · [Future AWS design →](docs/aws-design.md)
 
-Next priorities: confirm GitHub checks, capture the portfolio overview/video, add secret and container scanning, and then implement statically validated Terraform without applying paid resources. The `aws` repository suffix refers to that intended extension; the current implementation runs on Docker Compose only.
+Next priorities: capture the portfolio overview screenshot and a short demo video, add the S3 storage adapter so PDFs can live in the bucket defined in `infra/`, then design the ECS Fargate and RDS layer. The `aws` in the repository name refers to this extension: today the application runs on Docker Compose only.

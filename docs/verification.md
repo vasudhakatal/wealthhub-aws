@@ -4,11 +4,12 @@ Development environment: Linux with Python 3.12 and Node 24. Windows and Docker 
 
 Results are recorded at packaging time. Backend tests use an isolated SQLite database to exercise routes and PDF processing. PostgreSQL-specific row locking and Docker volume permissions require the Compose smoke check and CI integration job; SQLite tests do not prove these properties.
 
-The delivered GitHub workflow includes a real PostgreSQL Compose integration job but has not yet run in the user's account. The package does not claim cloud deployment, container image scanning or Terraform validation.
+The delivered GitHub workflow includes a real PostgreSQL Compose integration job but has not yet run in the user's account. The workflow now also runs gitleaks, Trivy image scans, `terraform validate` and Checkov. The package does not claim cloud deployment: `infra/` has never been applied.
 
 ## Completed checks
 
-- Seven pytest tests passed: login and protected routes, expired JWTs, independent source failure, timeout retries, onboarding to a valid PDF, invalid inputs and login throttling.
+- 40 pytest tests pass (run locally on Linux with Python 3.12): login and protected routes, JWT claims, expiry, wrong secret and wrong audience, independent source failure for each source, bounded retries, concurrent fetching, onboarding to a valid PDF, invalid inputs, trimming, login and general rate limits, security headers, worker ordering and worker failure handling.
+- `terraform`-compatible formatting passes for `infra/`, and Checkov reports no failed checks with the documented skips in `.checkov.yaml`. `terraform validate` runs in CI because the provider download is not available in the development sandbox.
 - Ruff checks passed for the API and worker.
 - Vite production build passed. Bundler emitted advisory warnings about chart bundle size and dependency `use client` directives; neither blocked the build.
 - `npm audit --audit-level=high`: zero reported vulnerabilities at packaging time.
